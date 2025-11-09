@@ -1,153 +1,112 @@
-// Service yang support file BESAR
+// Services data
 const uploadServices = [
     {
         id: 'pomf2lain',
         name: 'Pomf2 Lain.la',
-        description: 'UNLIMITED - Support file sangat besar',
+        description: 'Unlimited file size support with fast upload speeds',
         icon: '🚀',
         details: {
             'Max Size': 'UNLIMITED',
             'Speed': 'Very Fast',
             'Retention': 'Permanent',
-            'Features': 'No Limits'
+            'Features': 'No Limits, Fast CDN'
         },
         badge: 'BEST'
     },
     {
-        id: 'quax', 
+        id: 'quax',
         name: 'Qu.ax',
-        description: 'UNLIMITED - Reliable large file hosting',
+        description: 'Reliable file hosting with unlimited storage',
         icon: '⚡',
         details: {
             'Max Size': 'UNLIMITED',
             'Speed': 'Fast',
-            'Retention': 'Permanent', 
-            'Features': 'Large Files'
-        }
+            'Retention': 'Permanent',
+            'Features': 'Direct Links, No Compression'
+        },
+        badge: 'UNLIMITED'
     },
     {
         id: 'catbox',
         name: 'Catbox.moe',
-        description: '200MB max - Optimized for media',
+        description: 'Media-optimized hosting perfect for images and videos',
         icon: '🐱',
         details: {
             'Max Size': '200MB',
             'Speed': 'Fast',
             'Retention': 'Permanent',
-            'Features': 'Media Focus'
+            'Features': 'Media Focused, Fast Delivery'
         }
     },
     {
         id: 'tmpfiles',
         name: 'TmpFiles.org',
-        description: '100MB max - Temporary storage',
+        description: 'Temporary file storage for quick sharing',
         icon: '⏰',
         details: {
             'Max Size': '100MB',
             'Speed': 'Medium',
             'Retention': '60 Minutes',
-            'Features': 'Auto Delete'
-        },
-        badge: 'Temp'
+            'Features': 'Auto Cleanup, Quick Share'
+        }
     }
 ];
 
+// App state
 let selectedFile = null;
 let selectedServices = [];
+let uploadHistory = [];
 
-// Navigation
-document.querySelectorAll('.nav-links a').forEach(item => {
-    item.addEventListener('click', () => {
-        document.querySelectorAll('.nav-links a').forEach(nav => nav.classList.remove('active'));
-        item.classList.add('active');
-        
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.classList.remove('active');
-            if (section.id === item.getAttribute('data-section')) {
-                section.classList.add('active');
-            }
-        });
-    });
+// DOM elements
+const pageTitle = document.getElementById('pageTitle');
+const pageSubtitle = document.getElementById('pageSubtitle');
+const totalUploads = document.getElementById('totalUploads');
+const successRate = document.getElementById('successRate');
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
 });
 
-// Typewriter effect
-const texts = ["100MB+", "500MB+", "1GB+"];
-let textIndex = 0;
-let charIndex = 0;
-
-function typeWriter() {
-    if(charIndex < texts[textIndex].length){
-        document.querySelector(".typewriter-text").innerHTML += texts[textIndex].charAt(charIndex);
-        charIndex++;
-        setTimeout(typeWriter, 100);
-    } else {
-        setTimeout(eraseText, 1000);
-    }
-}
-
-function eraseText() {
-    const text = document.querySelector(".typewriter-text").innerHTML;
-    if(text.length > 0){
-        document.querySelector(".typewriter-text").innerHTML = text.slice(0,-1);
-        setTimeout(eraseText, 50);
-    } else {
-        textIndex = (textIndex + 1) % texts.length;
-        charIndex = 0;
-        setTimeout(typeWriter, 500);
-    }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
+function initializeApp() {
     renderServices();
     setupEventListeners();
-    typeWriter();
-});
-
-function renderServices() {
-    const servicesGrid = document.getElementById('servicesGrid');
-    servicesGrid.innerHTML = '';
-
-    uploadServices.forEach(service => {
-        const serviceCard = document.createElement('div');
-        serviceCard.className = 'service-card';
-        serviceCard.dataset.id = service.id;
-        
-        const badgeHtml = service.badge ? `<span class="badge badge-success">${service.badge}</span>` : '';
-        
-        let detailsHtml = '';
-        for (const [key, value] of Object.entries(service.details)) {
-            detailsHtml += `<div><span>${key}:</span> <strong>${value}</strong></div>`;
-        }
-        
-        serviceCard.innerHTML = `
-            <div class="service-header">
-                <div class="service-icon">${service.icon}</div>
-                <div class="service-name">${service.name} ${badgeHtml}</div>
-            </div>
-            <div class="service-desc">${service.description}</div>
-            <div class="service-details">${detailsHtml}</div>
-        `;
-        
-        servicesGrid.appendChild(serviceCard);
-    });
+    updateStats();
 }
 
+// Navigation
 function setupEventListeners() {
+    // Sidebar navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = item.getAttribute('data-section');
+            switchSection(section);
+            
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
+        });
+    });
+
+    // File input
     const fileInput = document.getElementById('fileInput');
     const uploadArea = document.getElementById('uploadArea');
-    
+    const browseBtn = uploadArea.querySelector('.browse-btn');
+
     fileInput.addEventListener('change', handleFileSelect);
-    
+    browseBtn.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('active');
     });
-    
+
     uploadArea.addEventListener('dragleave', () => {
         uploadArea.classList.remove('active');
     });
-    
+
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.classList.remove('active');
@@ -155,42 +114,119 @@ function setupEventListeners() {
             handleFile(e.dataTransfer.files[0]);
         }
     });
-    
-    uploadArea.addEventListener('click', () => {
-        fileInput.click();
-    });
-    
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('.service-card')) {
-            const serviceCard = e.target.closest('.service-card');
-            const serviceId = serviceCard.dataset.id;
-            toggleServiceSelection(serviceId, serviceCard);
-        }
-    });
-    
+
+    // Upload button
     document.getElementById('uploadBtn').addEventListener('click', startUpload);
+    
+    // Change file button
+    document.getElementById('changeFile').addEventListener('click', () => fileInput.click());
+    
+    // Clear selection
+    document.getElementById('clearSelection').addEventListener('click', clearAllSelections);
 }
 
-// TANPA BATASAN SIZE - Support file besar
+function switchSection(section) {
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(sec => {
+        sec.classList.remove('active');
+    });
+
+    // Show target section
+    document.getElementById(section).classList.add('active');
+
+    // Update page title
+    const titles = {
+        'upload': 'Upload Files',
+        'services': 'Services',
+        'results': 'Upload Results'
+    };
+
+    const subtitles = {
+        'upload': 'Upload large files to multiple services',
+        'services': 'Choose where to upload your files',
+        'results': 'Recent upload activities and results'
+    };
+
+    pageTitle.textContent = titles[section];
+    pageSubtitle.textContent = subtitles[section];
+}
+
+function renderServices() {
+    const container = document.getElementById('servicesContainer');
+    container.innerHTML = '';
+
+    uploadServices.forEach(service => {
+        const serviceCard = document.createElement('div');
+        serviceCard.className = 'service-card';
+        serviceCard.dataset.id = service.id;
+        
+        const badgeHtml = service.badge ? 
+            `<span class="service-badge ${service.badge === 'BEST' ? 'badge-best' : 'badge-unlimited'}">${service.badge}</span>` : '';
+
+        let detailsHtml = '';
+        for (const [key, value] of Object.entries(service.details)) {
+            detailsHtml += `
+                <div class="service-detail">
+                    <span>${key}:</span>
+                    <span>${value}</span>
+                </div>
+            `;
+        }
+
+        serviceCard.innerHTML = `
+            <div class="service-header">
+                <div class="service-icon">${service.icon}</div>
+                <div>
+                    <div class="service-name">${service.name} ${badgeHtml}</div>
+                    <div class="service-desc">${service.description}</div>
+                </div>
+            </div>
+            <div class="service-details">
+                ${detailsHtml}
+            </div>
+        `;
+
+        serviceCard.addEventListener('click', () => {
+            toggleServiceSelection(service.id, serviceCard);
+        });
+
+        container.appendChild(serviceCard);
+    });
+}
+
+function handleFileSelect(e) {
+    if (e.target.files.length) {
+        handleFile(e.target.files[0]);
+    }
+}
+
 function handleFile(file) {
     selectedFile = file;
     
     const fileInfo = document.getElementById('fileInfo');
-    const fileSize = (file.size / 1024 / 1024).toFixed(2);
-    fileInfo.innerHTML = `
-        <strong>File:</strong> ${file.name}<br>
-        <strong>Size:</strong> ${fileSize} MB<br>
-        <strong>Type:</strong> ${file.type || 'Unknown'}<br>
-        <span style="color: #00ff00;">✓ Ready for LARGE file upload</span>
-        <button class="btn" style="margin-top: 10px; padding: 5px 15px;" id="changeFile">Change File</button>
-    `;
+    const fileIcon = document.getElementById('fileIcon');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+
+    // Set file icon based on type
+    const fileType = file.type.split('/')[0];
+    const icons = {
+        'image': 'fas fa-file-image',
+        'video': 'fas fa-file-video',
+        'audio': 'fas fa-file-audio',
+        'application': 'fas fa-file-pdf',
+        'text': 'fas fa-file-alt'
+    };
+    
+    fileIcon.className = icons[fileType] || 'fas fa-file';
+
+    // Update file info
+    fileName.textContent = file.name;
+    fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+    // Show file info
     fileInfo.style.display = 'block';
-    
-    document.getElementById('changeFile').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('fileInput').click();
-    });
-    
+
     updateUploadButton();
 }
 
@@ -210,25 +246,24 @@ function toggleServiceSelection(serviceId, serviceCard) {
 }
 
 function updateSelectedServicesDisplay() {
-    const selectedServicesEl = document.getElementById('selectedServices');
-    
+    const panel = document.getElementById('selectedServicesPanel');
+    const tagsContainer = document.getElementById('servicesTags');
+
     if (selectedServices.length === 0) {
-        selectedServicesEl.style.display = 'none';
+        panel.style.display = 'none';
         return;
     }
-    
-    const selectedNames = selectedServices.map(id => {
-        const service = uploadServices.find(s => s.id === id);
-        return service.name;
+
+    tagsContainer.innerHTML = '';
+    selectedServices.forEach(serviceId => {
+        const service = uploadServices.find(s => s.id === serviceId);
+        const tag = document.createElement('div');
+        tag.className = 'service-tag';
+        tag.innerHTML = `${service.icon} ${service.name}`;
+        tagsContainer.appendChild(tag);
     });
-    
-    selectedServicesEl.innerHTML = `
-        <strong>Selected (${selectedServices.length}):</strong> ${selectedNames.join(', ')}
-        <button class="btn" style="margin-left: 10px; padding: 5px 15px;" id="clearSelection">Clear All</button>
-    `;
-    selectedServicesEl.style.display = 'block';
-    
-    document.getElementById('clearSelection').addEventListener('click', clearAllSelections);
+
+    panel.style.display = 'block';
 }
 
 function clearAllSelections() {
@@ -241,49 +276,123 @@ function clearAllSelections() {
 }
 
 function updateUploadButton() {
-    document.getElementById('uploadBtn').disabled = !(selectedFile && selectedServices.length > 0);
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.disabled = !(selectedFile && selectedServices.length > 0);
 }
 
 async function startUpload() {
     if (!selectedFile || selectedServices.length === 0) return;
-    
+
+    // Switch to results section
+    switchSection('results');
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
     document.querySelector('[data-section="results"]').classList.add('active');
-    document.querySelectorAll('.nav-links a').forEach(nav => nav.classList.remove('active'));
-    document.querySelector('[data-section="results"]').classList.add('active');
-    
-    const uploadInfo = document.getElementById('uploadInfo');
-    const fileSize = (selectedFile.size / 1024 / 1024).toFixed(2);
-    uploadInfo.innerHTML = `
-        <h3>📂 ${selectedFile.name}</h3>
-        <p>📏 ${fileSize} MB | 🎯 ${selectedServices.length} services</p>
-        <p><small>Direct Large File Upload...</small></p>
-    `;
-    
-    const resultsGrid = document.getElementById('resultsGrid');
-    resultsGrid.innerHTML = '';
-    
+
+    // Clear previous results
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+
+    // Create result items
     selectedServices.forEach(serviceId => {
         const service = uploadServices.find(s => s.id === serviceId);
-        
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
+        resultItem.id = `result-${serviceId}`;
         resultItem.innerHTML = `
-            <div class="result-service">${service.name}</div>
-            <div class="result-url" id="url-${serviceId}">Processing large file...</div>
-            <div class="result-status status-pending" id="status-${serviceId}">Uploading</div>
-            <button class="copy-btn" id="copy-${serviceId}" disabled>Copy</button>
-            <div class="progress-bar">
-                <div class="progress" id="progress-${serviceId}"></div>
+            <div class="result-service">
+                <div class="result-service-icon">${service.icon}</div>
+                <div class="result-details">
+                    <div class="result-url" id="url-${serviceId}">Uploading ${selectedFile.name}...</div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-${serviceId}"></div>
+                    </div>
+                </div>
             </div>
+            <div class="result-status status-pending" id="status-${serviceId}">Uploading</div>
+            <button class="copy-btn" id="copy-${serviceId}" disabled>Copy URL</button>
         `;
-        
-        resultsGrid.appendChild(resultItem);
+        resultsList.appendChild(resultItem);
     });
-    
-    await uploadToServer();
+
+    // Hide no results message
+    document.getElementById('noResults').style.display = 'none';
+
+    // Start upload process
+    await uploadToServices();
 }
 
-// DIRECT UPLOAD - File besar langsung ke service
+async function uploadToServices() {
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+    try {
+        const uploadPromises = selectedServices.map(async (serviceId) => {
+            try {
+                // Update progress
+                document.getElementById(`progress-${serviceId}`).style.width = '30%';
+                
+                const url = await directUploadToService(serviceId, selectedFile);
+                
+                // Mark as successful
+                document.getElementById(`progress-${serviceId}`).style.width = '100%';
+                document.getElementById(`status-${serviceId}`).textContent = 'Success';
+                document.getElementById(`status-${serviceId}`).className = 'result-status status-success';
+                document.getElementById(`url-${serviceId}`).textContent = url;
+                document.getElementById(`url-${serviceId}`).title = url;
+                
+                // Enable copy button
+                const copyBtn = document.getElementById(`copy-${serviceId}`);
+                copyBtn.disabled = false;
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(url).then(() => {
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.textContent = originalText;
+                        }, 2000);
+                    });
+                });
+
+                return { service: serviceId, success: true, url: url, error: null };
+                
+            } catch (error) {
+                // Mark as failed
+                document.getElementById(`progress-${serviceId}`).style.width = '100%';
+                document.getElementById(`status-${serviceId}`).textContent = 'Failed';
+                document.getElementById(`status-${serviceId}`).className = 'result-status status-failed';
+                document.getElementById(`url-${serviceId}`).textContent = error.message;
+                document.getElementById(`copy-${serviceId}`).style.display = 'none';
+                
+                return { service: serviceId, success: false, url: null, error: error.message };
+            }
+        });
+
+        const results = await Promise.allSettled(uploadPromises);
+        const finalResults = results.map(result => 
+            result.status === 'fulfilled' ? result.value : {
+                service: 'unknown', success: false, url: null, error: 'Unknown error'
+            }
+        );
+
+        // Add to history and update stats
+        uploadHistory.push({
+            file: selectedFile.name,
+            timestamp: new Date(),
+            results: finalResults
+        });
+
+        updateResultsSummary(finalResults);
+        updateStats();
+
+    } catch (error) {
+        console.error('Upload process error:', error);
+    } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fas fa-rocket"></i> Start Upload to Selected Services';
+    }
+}
+
 async function directUploadToService(serviceId, file) {
     const serviceConfigs = {
         'pomf2lain': {
@@ -335,7 +444,7 @@ async function directUploadToService(serviceId, file) {
         const result = await response.json();
         const url = config.responseHandler(result);
         
-        if (!url) throw new Error('No URL received');
+        if (!url) throw new Error('No URL received from service');
         
         return url;
         
@@ -344,80 +453,22 @@ async function directUploadToService(serviceId, file) {
     }
 }
 
-async function uploadToServer() {
-    try {
-        const uploadBtn = document.getElementById('uploadBtn');
-        uploadBtn.disabled = true;
-        uploadBtn.textContent = 'Uploading Large File...';
-        
-        const uploadPromises = selectedServices.map(async (serviceId) => {
-            try {
-                document.getElementById(`progress-${serviceId}`).style.width = '30%';
-                
-                const url = await directUploadToService(serviceId, selectedFile);
-                
-                document.getElementById(`progress-${serviceId}`).style.width = '100%';
-                document.getElementById(`status-${serviceId}`).textContent = 'Success';
-                document.getElementById(`status-${serviceId}`).className = 'result-status status-success';
-                
-                return { service: serviceId, success: true, url: url, error: null };
-                
-            } catch (error) {
-                document.getElementById(`progress-${serviceId}`).style.width = '100%';
-                document.getElementById(`status-${serviceId}`).textContent = 'Failed';
-                document.getElementById(`status-${serviceId}`).className = 'result-status status-failed';
-                
-                return { service: serviceId, success: false, url: null, error: error.message };
-            }
-        });
-        
-        const results = await Promise.allSettled(uploadPromises);
-        const finalResults = results.map(result => 
-            result.status === 'fulfilled' ? result.value : {
-                service: 'unknown', success: false, url: null, error: 'Unknown error'
-            }
-        );
-        
-        updateUploadResults(finalResults);
-        
-    } catch (error) {
-        selectedServices.forEach(serviceId => {
-            document.getElementById(`status-${serviceId}`).textContent = 'Failed';
-            document.getElementById(`status-${serviceId}`).className = 'result-status status-failed';
-            document.getElementById(`url-${serviceId}`).textContent = error.message;
-        });
-    } finally {
-        const uploadBtn = document.getElementById('uploadBtn');
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = 'Upload File Besar';
-    }
+function updateResultsSummary(results) {
+    const successCount = results.filter(r => r.success).length;
+    const failedCount = results.filter(r => !r.success).length;
+    const totalCount = results.length;
+
+    document.getElementById('successCount').textContent = successCount;
+    document.getElementById('failedCount').textContent = failedCount;
+    document.getElementById('totalCount').textContent = totalCount;
 }
 
-function updateUploadResults(results) {
-    let successCount = 0;
+function updateStats() {
+    const total = uploadHistory.reduce((sum, upload) => sum + upload.results.length, 0);
+    const success = uploadHistory.reduce((sum, upload) => 
+        sum + upload.results.filter(r => r.success).length, 0
+    );
     
-    results.forEach(result => {
-        const { service, success, url, error } = result;
-        
-        if (success && url) {
-            document.getElementById(`url-${service}`).textContent = url;
-            successCount++;
-            
-            document.getElementById(`copy-${service}`).disabled = false;
-            document.getElementById(`copy-${service}`).addEventListener('click', function() {
-                navigator.clipboard.writeText(url).then(() => {
-                    const originalText = this.textContent;
-                    this.textContent = 'Copied!';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
-                });
-            });
-        } else {
-            document.getElementById(`url-${service}`).textContent = error;
-            document.getElementById(`copy-${service}`).style.display = 'none';
-        }
-    });
-    
-    document.getElementById('uploadInfo').innerHTML += `<p><strong>Result:</strong> ${successCount} success, ${results.length - successCount} failed</p>`;
+    totalUploads.textContent = total;
+    successRate.textContent = total > 0 ? `${Math.round((success / total) * 100)}%` : '100%';
 }
