@@ -1,199 +1,253 @@
-// Services data
+// Data layanan upload
 const uploadServices = [
     {
-        id: 'pomf2lain',
-        name: 'Pomf2 Lain.la',
-        description: 'Unlimited file size support with fast upload speeds',
-        icon: '🚀',
+        id: 'termai',
+        name: 'Termai',
+        description: 'Layanan upload cepat dengan API khusus',
+        icon: 'T',
         details: {
-            'Max Size': 'UNLIMITED',
-            'Speed': 'Very Fast',
-            'Retention': 'Permanent',
-            'Features': 'No Limits, Fast CDN'
+            'Kecepatan': 'Tinggi',
+            'Kapasitas': 'Tidak Diketahui',
+            'Masa Aktif': 'Tidak Diketahui',
+            'Fitur': 'API Khusus'
         },
-        badge: 'BEST'
+        badge: 'Rekomendasi'
     },
     {
         id: 'quax',
         name: 'Qu.ax',
-        description: 'Reliable file hosting with unlimited storage',
-        icon: '⚡',
+        description: 'Penyedia hosting file yang andal',
+        icon: 'Q',
         details: {
-            'Max Size': 'UNLIMITED',
-            'Speed': 'Fast',
-            'Retention': 'Permanent',
-            'Features': 'Direct Links, No Compression'
-        },
-        badge: 'UNLIMITED'
+            'Kecepatan': 'Sedang',
+            'Kapasitas': 'Tidak Dibatasi',
+            'Masa Aktif': 'Permanen',
+            'Fitur': 'Direct Link'
+        }
     },
     {
         id: 'catbox',
         name: 'Catbox.moe',
-        description: 'Media-optimized hosting perfect for images and videos',
-        icon: '🐱',
+        description: 'Hosting file khusus untuk gambar dan media',
+        icon: 'C',
         details: {
-            'Max Size': '200MB',
-            'Speed': 'Fast',
-            'Retention': 'Permanent',
-            'Features': 'Media Focused, Fast Delivery'
+            'Kecepatan': 'Tinggi',
+            'Kapasitas': '200MB',
+            'Masa Aktif': 'Permanen',
+            'Fitur': 'Optimized Media'
+        }
+    },
+    {
+        id: 'ypnk',
+        name: 'YPNK CDN',
+        description: 'CDN Indonesia dengan kecepatan lokal',
+        icon: 'Y',
+        details: {
+            'Kecepatan': 'Tinggi (Lokal)',
+            'Kapasitas': 'Tidak Diketahui',
+            'Masa Aktif': 'Tidak Diketahui',
+            'Fitur': 'CDN Indonesia'
         }
     },
     {
         id: 'tmpfiles',
         name: 'TmpFiles.org',
-        description: 'Temporary file storage for quick sharing',
-        icon: '⏰',
+        description: 'Penyimpanan sementara untuk file',
+        icon: 'T',
         details: {
-            'Max Size': '100MB',
-            'Speed': 'Medium',
-            'Retention': '60 Minutes',
-            'Features': 'Auto Cleanup, Quick Share'
-        }
+            'Kecepatan': 'Sedang',
+            'Kapasitas': '100MB',
+            'Masa Aktif': '60 Menit',
+            'Fitur': 'Auto Delete'
+        },
+        badge: 'Sementara'
+    },
+    {
+        id: 'puticu',
+        name: 'Put.icu',
+        description: 'Layanan upload dengan metode PUT',
+        icon: 'P',
+        details: {
+            'Kecepatan': 'Sedang',
+            'Kapasitas': 'Tidak Diketahui',
+            'Masa Aktif': '1 Hari',
+            'Fitur': 'PUT Method'
+        },
+        badge: 'Sementara'
     }
 ];
 
-// App state
+// State aplikasi
 let selectedFile = null;
 let selectedServices = [];
-let uploadHistory = [];
 
-// DOM elements
-const pageTitle = document.getElementById('pageTitle');
-const pageSubtitle = document.getElementById('pageSubtitle');
-const totalUploads = document.getElementById('totalUploads');
-const successRate = document.getElementById('successRate');
+// DOM Elements
+const menuBtn = document.querySelector('.menu-btn');
+const navLinks = document.querySelector('.nav-links');
+const navItems = document.querySelectorAll('.nav-links a');
+const contentSections = document.querySelectorAll('.content-section');
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+// Toggle mobile menu
+menuBtn.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
 });
 
-function initializeApp() {
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.nav-links') && !e.target.closest('.menu-btn')) {
+        navLinks.classList.remove('active');
+    }
+});
+
+// Handle navigation
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // Update active nav item
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+
+        // Show corresponding section
+        const sectionId = item.getAttribute('data-section');
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === sectionId) {
+                section.classList.add('active');
+            }
+        });
+
+        // Close mobile menu after click
+        navLinks.classList.remove('active');
+    });
+});
+
+// Typewriter effect
+const texts = [
+    "MULTIPLE SERVICES",
+    "FAST UPLOAD", 
+    "SECURE HOSTING"
+];
+
+let speed = 100;
+const textElements = document.querySelector(".typewriter-text");
+let textIndex = 0;
+let charcterIndex = 0;
+
+function typeWriter() {
+    if(charcterIndex < texts[textIndex].length){
+        textElements.innerHTML += texts[textIndex].charAt(charcterIndex);
+        charcterIndex++;
+        setTimeout(typeWriter, speed); 
+    }
+    else{
+        setTimeout(eraseText, 1000)
+    }
+}
+
+function eraseText() {
+    if(textElements.innerHTML.length > 0){
+        textElements.innerHTML = textElements.innerHTML.slice(0,-1)
+        setTimeout(eraseText, 50)
+    }
+    else{
+        textIndex = (textIndex + 1) % texts.length;
+        charcterIndex = 0;
+        setTimeout(typeWriter,500)
+    }
+}
+
+window.onload = typeWriter;
+
+// Inisialisasi
+document.addEventListener('DOMContentLoaded', function() {
     renderServices();
     setupEventListeners();
-    updateStats();
-}
+});
 
-// Navigation
-function setupEventListeners() {
-    // Sidebar navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const section = item.getAttribute('data-section');
-            switchSection(section);
-            
-            // Update active nav item
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-        });
-    });
-
-    // File input
-    const fileInput = document.getElementById('fileInput');
-    const uploadArea = document.getElementById('uploadArea');
-    const browseBtn = uploadArea.querySelector('.browse-btn');
-
-    fileInput.addEventListener('change', handleFileSelect);
-    browseBtn.addEventListener('click', () => fileInput.click());
-
-    // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('active');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('active');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('active');
-        if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]);
-        }
-    });
-
-    // Upload button
-    document.getElementById('uploadBtn').addEventListener('click', startUpload);
-    
-    // Change file button
-    document.getElementById('changeFile').addEventListener('click', () => fileInput.click());
-    
-    // Clear selection
-    document.getElementById('clearSelection').addEventListener('click', clearAllSelections);
-}
-
-function switchSection(section) {
-    // Hide all sections
-    document.querySelectorAll('.content-section').forEach(sec => {
-        sec.classList.remove('active');
-    });
-
-    // Show target section
-    document.getElementById(section).classList.add('active');
-
-    // Update page title
-    const titles = {
-        'upload': 'Upload Files',
-        'services': 'Services',
-        'results': 'Upload Results'
-    };
-
-    const subtitles = {
-        'upload': 'Upload large files to multiple services',
-        'services': 'Choose where to upload your files',
-        'results': 'Recent upload activities and results'
-    };
-
-    pageTitle.textContent = titles[section];
-    pageSubtitle.textContent = subtitles[section];
-}
-
+// Render daftar layanan
 function renderServices() {
-    const container = document.getElementById('servicesContainer');
-    container.innerHTML = '';
+    const servicesGrid = document.getElementById('servicesGrid');
+    servicesGrid.innerHTML = '';
 
     uploadServices.forEach(service => {
         const serviceCard = document.createElement('div');
         serviceCard.className = 'service-card';
         serviceCard.dataset.id = service.id;
         
-        const badgeHtml = service.badge ? 
-            `<span class="service-badge ${service.badge === 'BEST' ? 'badge-best' : 'badge-unlimited'}">${service.badge}</span>` : '';
-
+        let badgeHtml = '';
+        if (service.badge) {
+            let badgeClass = 'badge-info';
+            if (service.badge === 'Rekomendasi') badgeClass = 'badge-success';
+            if (service.badge === 'Sementara') badgeClass = 'badge-warning';
+            
+            badgeHtml = `<span class="badge ${badgeClass}">${service.badge}</span>`;
+        }
+        
         let detailsHtml = '';
         for (const [key, value] of Object.entries(service.details)) {
-            detailsHtml += `
-                <div class="service-detail">
-                    <span>${key}:</span>
-                    <span>${value}</span>
-                </div>
-            `;
+            detailsHtml += `<div><span>${key}:</span> <strong>${value}</strong></div>`;
         }
-
+        
         serviceCard.innerHTML = `
             <div class="service-header">
                 <div class="service-icon">${service.icon}</div>
-                <div>
-                    <div class="service-name">${service.name} ${badgeHtml}</div>
-                    <div class="service-desc">${service.description}</div>
-                </div>
+                <div class="service-name">${service.name} ${badgeHtml}</div>
             </div>
+            <div class="service-desc">${service.description}</div>
             <div class="service-details">
                 ${detailsHtml}
             </div>
         `;
-
-        serviceCard.addEventListener('click', () => {
-            toggleServiceSelection(service.id, serviceCard);
-        });
-
-        container.appendChild(serviceCard);
+        
+        servicesGrid.appendChild(serviceCard);
     });
 }
 
+// Setup event listeners
+function setupEventListeners() {
+    // File input
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('active');
+    });
+    
+    uploadArea.addEventListener('dragleave', function() {
+        uploadArea.classList.remove('active');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('active');
+        
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+    
+    // Klik pada area upload
+    uploadArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Pilih layanan
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.service-card')) {
+            const serviceCard = e.target.closest('.service-card');
+            const serviceId = serviceCard.dataset.id;
+            toggleServiceSelection(serviceId, serviceCard);
+        }
+    });
+    
+    // Tombol upload
+    document.getElementById('uploadBtn').addEventListener('click', startUpload);
+}
+
+// Handle pemilihan file
 function handleFileSelect(e) {
     if (e.target.files.length) {
         handleFile(e.target.files[0]);
@@ -201,71 +255,82 @@ function handleFileSelect(e) {
 }
 
 function handleFile(file) {
+    // Validasi ukuran file (max 50MB untuk Vercel)
+    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    if (file.size > maxSize) {
+        alert('File terlalu besar! Maksimal ukuran file adalah 50MB (batasan Vercel).');
+        return;
+    }
+
     selectedFile = file;
     
+    // Tampilkan info file
     const fileInfo = document.getElementById('fileInfo');
-    const fileIcon = document.getElementById('fileIcon');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
-
-    // Set file icon based on type
-    const fileType = file.type.split('/')[0];
-    const icons = {
-        'image': 'fas fa-file-image',
-        'video': 'fas fa-file-video',
-        'audio': 'fas fa-file-audio',
-        'application': 'fas fa-file-pdf',
-        'text': 'fas fa-file-alt'
-    };
-    
-    fileIcon.className = icons[fileType] || 'fas fa-file';
-
-    // Update file info
-    fileName.textContent = file.name;
-    fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-
-    // Show file info
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    fileInfo.innerHTML = `
+        <strong>File Terpilih:</strong> ${file.name}<br>
+        <strong>Ukuran:</strong> ${fileSize} MB<br>
+        <strong>Tipe:</strong> ${file.type || 'Tidak diketahui'}
+        <button class="btn" style="margin-top: 10px; padding: 5px 15px;" id="changeFile">Ubah File</button>
+    `;
     fileInfo.style.display = 'block';
-
+    
+    // Event listener untuk tombol ubah file
+    document.getElementById('changeFile').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('fileInput').click();
+    });
+    
+    // Aktifkan tombol upload jika ada layanan terpilih
     updateUploadButton();
 }
 
+// Toggle pemilihan layanan
 function toggleServiceSelection(serviceId, serviceCard) {
     const index = selectedServices.indexOf(serviceId);
     
     if (index === -1) {
+        // Tambahkan ke selected
         selectedServices.push(serviceId);
         serviceCard.classList.add('selected');
     } else {
+        // Hapus dari selected
         selectedServices.splice(index, 1);
         serviceCard.classList.remove('selected');
     }
     
+    // Update tampilan layanan terpilih
     updateSelectedServicesDisplay();
+    
+    // Update status tombol upload
     updateUploadButton();
 }
 
+// Update tampilan layanan terpilih
 function updateSelectedServicesDisplay() {
-    const panel = document.getElementById('selectedServicesPanel');
-    const tagsContainer = document.getElementById('servicesTags');
-
+    const selectedServicesEl = document.getElementById('selectedServices');
+    
     if (selectedServices.length === 0) {
-        panel.style.display = 'none';
+        selectedServicesEl.style.display = 'none';
         return;
     }
-
-    tagsContainer.innerHTML = '';
-    selectedServices.forEach(serviceId => {
-        const service = uploadServices.find(s => s.id === serviceId);
-        const tag = document.createElement('div');
-        tag.className = 'service-tag';
-        tag.innerHTML = `${service.icon} ${service.name}`;
-        tagsContainer.appendChild(tag);
+    
+    const selectedNames = selectedServices.map(id => {
+        const service = uploadServices.find(s => s.id === id);
+        return service.name;
     });
-
-    panel.style.display = 'block';
+    
+    selectedServicesEl.innerHTML = `
+        <strong>Layanan Terpilih (${selectedServices.length}):</strong> ${selectedNames.join(', ')}
+        <button class="btn" style="margin-left: 10px; padding: 5px 15px;" id="clearSelection">Hapus Semua</button>
+    `;
+    selectedServicesEl.style.display = 'block';
+    
+    // Event listener untuk tombol hapus semua
+    document.getElementById('clearSelection').addEventListener('click', clearAllSelections);
 }
 
+// Hapus semua pilihan layanan
 function clearAllSelections() {
     selectedServices = [];
     document.querySelectorAll('.service-card').forEach(card => {
@@ -275,200 +340,150 @@ function clearAllSelections() {
     updateUploadButton();
 }
 
+// Update status tombol upload
 function updateUploadButton() {
     const uploadBtn = document.getElementById('uploadBtn');
     uploadBtn.disabled = !(selectedFile && selectedServices.length > 0);
 }
 
+// Mulai proses upload
 async function startUpload() {
     if (!selectedFile || selectedServices.length === 0) return;
-
-    // Switch to results section
-    switchSection('results');
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    
+    // Navigate ke results section
+    navItems.forEach(nav => nav.classList.remove('active'));
     document.querySelector('[data-section="results"]').classList.add('active');
-
-    // Clear previous results
-    const resultsList = document.getElementById('resultsList');
-    resultsList.innerHTML = '';
-
-    // Create result items
+    
+    contentSections.forEach(section => {
+        section.classList.remove('active');
+        if (section.id === 'results') {
+            section.classList.add('active');
+        }
+    });
+    
+    // Tampilkan info file
+    const uploadInfo = document.getElementById('uploadInfo');
+    const fileSize = (selectedFile.size / 1024).toFixed(2);
+    uploadInfo.innerHTML = `
+        <h3>📂 File: ${selectedFile.name}</h3>
+        <p>📏 Size: ${fileSize} KB | 🎯 Services: ${selectedServices.length}</p>
+        <p><small>Uploading via Vercel Serverless Function...</small></p>
+    `;
+    
+    // Kosongkan container hasil
+    const resultsGrid = document.getElementById('resultsGrid');
+    resultsGrid.innerHTML = '';
+    
+    // Buat elemen hasil untuk setiap layanan
     selectedServices.forEach(serviceId => {
         const service = uploadServices.find(s => s.id === serviceId);
+        
         const resultItem = document.createElement('div');
         resultItem.className = 'result-item';
-        resultItem.id = `result-${serviceId}`;
         resultItem.innerHTML = `
-            <div class="result-service">
-                <div class="result-service-icon">${service.icon}</div>
-                <div class="result-details">
-                    <div class="result-url" id="url-${serviceId}">Uploading ${selectedFile.name}...</div>
-                    <div class="progress-bar">
-                        <div class="progress" id="progress-${serviceId}"></div>
-                    </div>
-                </div>
-            </div>
+            <div class="result-service">${service.name}</div>
+            <div class="result-url" id="url-${serviceId}">Memproses...</div>
             <div class="result-status status-pending" id="status-${serviceId}">Uploading</div>
-            <button class="copy-btn" id="copy-${serviceId}" disabled>Copy URL</button>
+            <button class="copy-btn" id="copy-${serviceId}" disabled>Salin</button>
+            <div class="progress-bar">
+                <div class="progress" id="progress-${serviceId}"></div>
+            </div>
         `;
-        resultsList.appendChild(resultItem);
+        
+        resultsGrid.appendChild(resultItem);
     });
-
-    // Hide no results message
-    document.getElementById('noResults').style.display = 'none';
-
-    // Start upload process
-    await uploadToServices();
+    
+    // Mulai proses upload ke server
+    await uploadToServer();
 }
 
-async function uploadToServices() {
-    const uploadBtn = document.getElementById('uploadBtn');
-    uploadBtn.disabled = true;
-    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-
-    try {
-        const uploadPromises = selectedServices.map(async (serviceId) => {
-            try {
-                // Update progress
-                document.getElementById(`progress-${serviceId}`).style.width = '30%';
-                
-                const url = await directUploadToService(serviceId, selectedFile);
-                
-                // Mark as successful
-                document.getElementById(`progress-${serviceId}`).style.width = '100%';
-                document.getElementById(`status-${serviceId}`).textContent = 'Success';
-                document.getElementById(`status-${serviceId}`).className = 'result-status status-success';
-                document.getElementById(`url-${serviceId}`).textContent = url;
-                document.getElementById(`url-${serviceId}`).title = url;
-                
-                // Enable copy button
-                const copyBtn = document.getElementById(`copy-${serviceId}`);
-                copyBtn.disabled = false;
-                copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(url).then(() => {
-                        const originalText = copyBtn.textContent;
-                        copyBtn.textContent = 'Copied!';
-                        setTimeout(() => {
-                            copyBtn.textContent = originalText;
-                        }, 2000);
-                    });
-                });
-
-                return { service: serviceId, success: true, url: url, error: null };
-                
-            } catch (error) {
-                // Mark as failed
-                document.getElementById(`progress-${serviceId}`).style.width = '100%';
-                document.getElementById(`status-${serviceId}`).textContent = 'Failed';
-                document.getElementById(`status-${serviceId}`).className = 'result-status status-failed';
-                document.getElementById(`url-${serviceId}`).textContent = error.message;
-                document.getElementById(`copy-${serviceId}`).style.display = 'none';
-                
-                return { service: serviceId, success: false, url: null, error: error.message };
-            }
-        });
-
-        const results = await Promise.allSettled(uploadPromises);
-        const finalResults = results.map(result => 
-            result.status === 'fulfilled' ? result.value : {
-                service: 'unknown', success: false, url: null, error: 'Unknown error'
-            }
-        );
-
-        // Add to history and update stats
-        uploadHistory.push({
-            file: selectedFile.name,
-            timestamp: new Date(),
-            results: finalResults
-        });
-
-        updateResultsSummary(finalResults);
-        updateStats();
-
-    } catch (error) {
-        console.error('Upload process error:', error);
-    } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<i class="fas fa-rocket"></i> Start Upload to Selected Services';
-    }
-}
-
-async function directUploadToService(serviceId, file) {
-    const serviceConfigs = {
-        'pomf2lain': {
-            url: 'https://pomf2.lain.la/upload.php',
-            formKey: 'files[]',
-            responseHandler: (data) => data.files?.[0]?.url
-        },
-        'quax': {
-            url: 'https://qu.ax/upload.php',
-            formKey: 'files[]', 
-            responseHandler: (data) => data.files?.[0]?.url
-        },
-        'catbox': {
-            url: 'https://catbox.moe/user/api.php',
-            formKey: 'fileToUpload',
-            extraData: { reqtype: 'fileupload' },
-            responseHandler: (data) => data
-        },
-        'tmpfiles': {
-            url: 'https://tmpfiles.org/api/v1/upload',
-            formKey: 'file',
-            responseHandler: (data) => {
-                const idMatch = data.data?.url?.match(/\/(\d+)(?:\/|$)/);
-                return idMatch ? `https://tmpfiles.org/dl/${idMatch[1]}/${file.name}` : null;
-            }
-        }
-    };
-    
-    const config = serviceConfigs[serviceId];
-    if (!config) throw new Error('Service not found');
-    
+// Upload file ke server
+async function uploadToServer() {
     const formData = new FormData();
-    formData.append(config.formKey, file);
-    
-    if (config.extraData) {
-        Object.entries(config.extraData).forEach(([key, value]) => {
-            formData.append(key, value);
-        });
-    }
+    formData.append('file', selectedFile);
+    formData.append('services', JSON.stringify(selectedServices));
     
     try {
-        const response = await fetch(config.url, {
+        // Update progress bars untuk simulasi
+        selectedServices.forEach((serviceId, index) => {
+            setTimeout(() => {
+                const progressBar = document.getElementById(`progress-${serviceId}`);
+                progressBar.style.width = '30%';
+            }, index * 200);
+        });
+
+        const response = await fetch('/api/upload', {
             method: 'POST',
             body: formData
         });
         
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const result = await response.json();
-        const url = config.responseHandler(result);
         
-        if (!url) throw new Error('No URL received from service');
-        
-        return url;
-        
+        if (result.success) {
+            // Update UI dengan hasil upload
+            updateUploadResults(result.results);
+        } else {
+            throw new Error(result.message || 'Upload gagal');
+        }
     } catch (error) {
-        throw new Error(`Upload failed: ${error.message}`);
+        console.error('Upload error:', error);
+        // Tampilkan error untuk semua service
+        selectedServices.forEach(serviceId => {
+            const statusEl = document.getElementById(`status-${serviceId}`);
+            const urlEl = document.getElementById(`url-${serviceId}`);
+            const progressBar = document.getElementById(`progress-${serviceId}`);
+            
+            statusEl.textContent = 'Failed';
+            statusEl.className = 'result-status status-failed';
+            urlEl.textContent = 'Upload gagal: ' + error.message;
+            progressBar.style.width = '100%';
+        });
     }
 }
 
-function updateResultsSummary(results) {
-    const successCount = results.filter(r => r.success).length;
-    const failedCount = results.filter(r => !r.success).length;
-    const totalCount = results.length;
-
-    document.getElementById('successCount').textContent = successCount;
-    document.getElementById('failedCount').textContent = failedCount;
-    document.getElementById('totalCount').textContent = totalCount;
-}
-
-function updateStats() {
-    const total = uploadHistory.reduce((sum, upload) => sum + upload.results.length, 0);
-    const success = uploadHistory.reduce((sum, upload) => 
-        sum + upload.results.filter(r => r.success).length, 0
-    );
+// Update hasil upload di UI
+function updateUploadResults(results) {
+    let successCount = 0;
     
-    totalUploads.textContent = total;
-    successRate.textContent = total > 0 ? `${Math.round((success / total) * 100)}%` : '100%';
+    results.forEach(result => {
+        const { service, success, url, error } = result;
+        const statusEl = document.getElementById(`status-${service}`);
+        const urlEl = document.getElementById(`url-${service}`);
+        const copyBtn = document.getElementById(`copy-${service}`);
+        const progressBar = document.getElementById(`progress-${service}`);
+        
+        progressBar.style.width = '100%';
+        
+        if (success && url) {
+            statusEl.textContent = 'Success';
+            statusEl.className = 'result-status status-success';
+            urlEl.textContent = url;
+            urlEl.title = url;
+            successCount++;
+            
+            copyBtn.disabled = false;
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Tersalin!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                });
+            });
+        } else {
+            statusEl.textContent = 'Failed';
+            statusEl.className = 'result-status status-failed';
+            urlEl.textContent = error || 'Upload gagal';
+            copyBtn.style.display = 'none';
+        }
+    });
+    
+    // Update info
+    const uploadInfo = document.getElementById('uploadInfo');
+    uploadInfo.innerHTML += `<p><strong>Hasil:</strong> ${successCount} sukses, ${results.length - successCount} gagal</p>`;
 }
