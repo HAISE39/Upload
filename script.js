@@ -38,6 +38,19 @@ const uploadServices = [
         }
     },
     {
+        id: 'pomf2lain',
+        name: 'Pomf2 Lain.la',
+        description: 'Layanan upload open source yang andal',
+        icon: 'O',
+        details: {
+            'Kecepatan': 'Tinggi',
+            'Kapasitas': 'Tidak Dibatasi',
+            'Masa Aktif': 'Permanen',
+            'Fitur': 'Open Source'
+        },
+        badge: 'Open Source'
+    },
+    {
         id: 'ypnk',
         name: 'YPNK CDN',
         description: 'CDN Indonesia dengan kecepatan lokal',
@@ -255,10 +268,10 @@ function handleFileSelect(e) {
 }
 
 function handleFile(file) {
-    // Validasi ukuran file (max 50MB untuk Vercel)
-    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    // Validasi ukuran file (max 200MB)
+    const maxSize = 200 * 1024 * 1024; // 200MB in bytes
     if (file.size > maxSize) {
-        alert('File terlalu besar! Maksimal ukuran file adalah 50MB (batasan Vercel).');
+        alert('File terlalu besar! Maksimal ukuran file adalah 200MB.');
         return;
     }
 
@@ -284,7 +297,6 @@ function handleFile(file) {
     // Aktifkan tombol upload jika ada layanan terpilih
     updateUploadButton();
 }
-
 // Toggle pemilihan layanan
 function toggleServiceSelection(serviceId, serviceCard) {
     const index = selectedServices.indexOf(serviceId);
