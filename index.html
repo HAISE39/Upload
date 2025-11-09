@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VELLIXAO-MULTI UPLOAD</title>
+    <title>Large File Uploader - Support 100MB+</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <nav>
-            <div class="logo">VELLHOST FILE MULTIUPLOAD</div>
+            <div class="logo">LargeFileUploader</div>
             <div class="nav-links">
                 <a data-section="upload" class="active">Upload</a>
                 <a data-section="services">Services</a>
                 <a data-section="results">Results</a>
-            </div>
-            <div class="menu-btn">
-                <i class="fas fa-bars"></i>
             </div>
         </nav>
 
@@ -26,30 +23,30 @@
             <section id="upload" class="content-section active">
                 <div class="hologram-container">
                     <div class="upload-container">
-                        <h1>Multi-Service Uploader</h1>
-                        <h2>UPLOAD TO
+                        <h1>Large File Uploader</h1>
+                        <h2>SUPPORT FILE
                             <span class="typewriter-text"></span>
                         </h2>
-                        <p>Unggah file Anda ke berbagai penyedia hosting dengan sekali klik. Pilih layanan yang sesuai dengan kebutuhan Anda.</p>
+                        <p>Unggah file besar (100MB, 200MB, 500MB+) langsung ke berbagai penyedia hosting tanpa batasan!</p>
                         
                         <div class="upload-area" id="uploadArea">
-                            <div class="upload-icon">📁</div>
-                            <h3>Seret & Lepas File Anda di Sini</h3>
-                            <p>Atau klik tombol di bawah untuk memilih file</p>
+                            <div class="upload-icon">🚀</div>
+                            <h3>Seret & Lepas File BESAR di Sini</h3>
+                            <p>Support: Video, Audio, Archive, Documents - No Limits!</p>
                             <input type="file" id="fileInput" class="file-input">
-                            <label for="fileInput" class="btn">Pilih File</label>
+                            <label for="fileInput" class="btn">Pilih File Besar</label>
                             <div class="file-info" id="fileInfo"></div>
                         </div>
                         
                         <div class="selected-services" id="selectedServices"></div>
                         
-                        <button class="btn" id="uploadBtn" disabled>Upload ke Layanan Terpilih</button>
+                        <button class="btn" id="uploadBtn" disabled>Upload File Besar</button>
                     </div>
 
                     <div class="profile-image">
                         <div class="profile-circle">
                             <div class="upload-icon-large">
-                                <i class="fas fa-cloud-upload-alt"></i>
+                                <i class="fas fa-file-upload"></i>
                             </div>
                         </div>
                     </div>
@@ -61,9 +58,7 @@
                 <div class="hologram-container">
                     <div class="services-full">
                         <h1>Pilih Layanan Upload</h1>
-                        <div class="services-grid" id="servicesGrid">
-                            <!-- Service cards will be populated by JavaScript -->
-                        </div>
+                        <div class="services-grid" id="servicesGrid"></div>
                     </div>
                 </div>
             </section>
@@ -72,12 +67,10 @@
             <section id="results" class="content-section">
                 <div class="hologram-container">
                     <div class="results-full">
-                        <h1>INPUT FILE</h1>
+                        <h1>Hasil Upload</h1>
                         <div class="results-container" id="resultsContainer">
                             <div class="upload-info" id="uploadInfo"></div>
-                            <div class="results-grid" id="resultsGrid">
-                                <!-- Results will be populated by JavaScript -->
-                            </div>
+                            <div class="results-grid" id="resultsGrid"></div>
                         </div>
                     </div>
                 </div>
