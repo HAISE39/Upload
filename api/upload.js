@@ -87,31 +87,6 @@ async function uploadCatbox(buffer, filename) {
   }
 }
 
-// Upload ke pomf2.lain.la
-async function uploadPomf2Lain(fileBuffer, filename) {
-  try {
-    const mime = require('mime-types');
-    const contentType = mime.lookup(filename) || "application/octet-stream";
-    const form = createFormData();
-    form.append("files[]", fileBuffer, {
-      contentType,
-      filename: filename,
-    });
-    
-    const response = await axios.post("https://pomf2.lain.la/upload.php", form, {
-      headers: { ...form.getHeaders() },
-    });
-    
-    if (response.data && response.data.success && response.data.files && response.data.files.length > 0) {
-      return response.data.files[0].url;
-    }
-    throw new Error("Upload ke pomf2.lain.la gagal");
-  } catch (err) {
-    console.error("Pomf2 Lain Error:", err.message);
-    return null;
-  }
-}
-
 // Upload ke cdn.ypnk.biz.id
 async function uploadYpnk(buffer, filename) {
   try {
@@ -240,7 +215,6 @@ module.exports = async (req, res) => {
       'termai': () => uploadTermai(fileBuffer, filename),
       'quax': () => pomf2(fileBuffer, filename),
       'catbox': () => uploadCatbox(fileBuffer, filename),
-      'pomf2lain': () => uploadPomf2Lain(fileBuffer, filename),
       'ypnk': () => uploadYpnk(fileBuffer, filename),
       'tmpfiles': () => uploadTmpFiles(fileBuffer, filename),
       'puticu': () => uploadPutIcu(fileBuffer, filename)
