@@ -26,6 +26,7 @@ body {
     padding: 0 20px;
 }
 
+/* Navigation */
 nav {
     display: flex;
     justify-content: space-between;
@@ -38,6 +39,11 @@ nav {
     color: var(--primary);
     font-size: 24px;
     font-weight: bold;
+    transition: text-shadow 0.3s ease;
+}
+
+.logo:hover {
+    text-shadow: 0 0 10px var(--glow-color);
 }
 
 .nav-links {
@@ -48,14 +54,39 @@ nav {
 .nav-links a {
     color: var(--light);
     text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
     padding: 8px 16px;
     border-radius: 20px;
-    cursor: pointer;
 }
 
 .nav-links a.active {
     color: var(--primary);
     background: rgba(0, 255, 255, 0.1);
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.nav-links a:hover {
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.menu-btn {
+    display: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+/* Hologram Effect */
+@keyframes hologramFlicker {
+    0% { opacity: 0.97; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.97; }
+}
+
+@keyframes hologramScan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
 }
 
 .hologram-container {
@@ -63,18 +94,41 @@ nav {
     background: rgba(0, 255, 255, 0.05);
     padding: 40px;
     margin: 20px 0;
+    overflow: hidden;
+    animation: hologramFlicker 2s infinite;
     border: 1px solid rgba(0, 255, 255, 0.3);
     border-radius: 15px;
 }
 
+.hologram-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        transparent,
+        rgba(0, 255, 255, 0.2),
+        transparent
+    );
+    animation: hologramScan 2s linear infinite;
+    pointer-events: none;
+}
+
+/* Content Sections */
 .content-section {
     display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .content-section.active {
     display: block;
+    opacity: 1;
 }
 
+/* Upload Section */
 .upload-container {
     flex: 1;
 }
@@ -82,34 +136,61 @@ nav {
 .upload-container h1 {
     font-size: 48px;
     margin-bottom: 16px;
+    transition: text-shadow 0.3s ease;
+}
+
+.upload-container h1:hover {
+    text-shadow: 0 0 15px var(--glow-color);
 }
 
 .upload-container h2 {
     color: var(--primary);
     font-size: 24px;
     margin-bottom: 16px;
+    transition: text-shadow 0.3s ease;
     min-height: 40px;
 }
 
+.upload-container h2:hover {
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.upload-container p {
+    color: var(--gray);
+    margin-bottom: 32px;
+    max-width: 500px;
+    transition: color 0.3s ease;
+}
+
+.upload-container p:hover {
+    color: var(--light);
+}
+
 .btn {
+    display: inline-block;
     padding: 12px 32px;
     background-color: var(--primary);
     color: var(--dark);
-    border: none;
+    text-decoration: none;
     border-radius: 50px;
     font-weight: bold;
+    transition: all 0.3s ease;
     cursor: pointer;
+    border: none;
     font-size: 16px;
 }
 
 .btn:hover {
     background-color: #00cccc;
+    box-shadow: 0 0 20px var(--glow-color);
     transform: scale(1.05);
 }
 
 .btn:disabled {
     background-color: var(--gray);
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .upload-area {
@@ -118,14 +199,25 @@ nav {
     padding: 40px;
     text-align: center;
     margin: 20px 0;
+    transition: all 0.3s ease;
     background: rgba(0, 255, 255, 0.05);
     cursor: pointer;
+}
+
+.upload-area.active {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: #00cccc;
 }
 
 .upload-icon {
     font-size: 4rem;
     color: var(--primary);
     margin-bottom: 20px;
+}
+
+.upload-icon-large {
+    font-size: 120px;
+    color: var(--primary);
 }
 
 .file-input {
@@ -138,6 +230,18 @@ nav {
     background: rgba(0, 255, 255, 0.1);
     border-radius: 8px;
     display: none;
+    border: 1px solid var(--primary);
+}
+
+/* Services Section */
+.services-full {
+    width: 100%;
+}
+
+.services-full h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 36px;
 }
 
 .services-grid {
@@ -150,12 +254,36 @@ nav {
     border: 1px solid var(--primary);
     padding: 20px;
     background: rgba(0, 255, 255, 0.05);
+    transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
     border-radius: 10px;
+}
+
+.service-card:hover {
+    box-shadow: 0 0 20px var(--glow-color);
+    transform: translateY(-5px);
 }
 
 .service-card.selected {
     background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 15px var(--glow-color);
+}
+
+.service-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary);
+    color: var(--dark);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
 }
 
 .service-header {
@@ -177,7 +305,37 @@ nav {
     background: var(--primary);
 }
 
+.service-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.service-desc {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.service-details {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.service-details div {
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.service-details div:last-child {
+    margin-bottom: 0;
+}
+
 .badge {
+    display: inline-block;
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.75rem;
@@ -190,12 +348,48 @@ nav {
     color: var(--primary);
 }
 
+.badge-warning {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.badge-danger {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.badge-info {
+    background: rgba(23, 162, 184, 0.2);
+    color: #17a2b8;
+}
+
 .selected-services {
     margin-top: 20px;
     padding: 15px;
     background: rgba(0, 255, 255, 0.1);
     border-radius: 8px;
     display: none;
+    border: 1px solid var(--primary);
+}
+
+/* Results Section */
+.results-full {
+    width: 100%;
+}
+
+.results-full h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 36px;
+}
+
+.upload-info {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid var(--primary);
+    text-align: center;
 }
 
 .results-grid {
@@ -212,12 +406,19 @@ nav {
     border: 1px solid rgba(0, 255, 255, 0.3);
     border-radius: 10px;
     background: rgba(0, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.result-item:hover {
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 15px var(--glow-color);
 }
 
 .result-service {
     font-weight: 600;
     color: var(--primary);
     min-width: 120px;
+    font-size: 16px;
 }
 
 .result-url {
@@ -228,6 +429,9 @@ nav {
     white-space: nowrap;
     color: var(--gray);
     font-family: monospace;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .result-status {
@@ -241,6 +445,7 @@ nav {
 .status-success {
     color: #00ff00;
     background: rgba(0, 255, 0, 0.1);
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
 }
 
 .status-failed {
@@ -260,8 +465,20 @@ nav {
     border-radius: 5px;
     padding: 8px 15px;
     cursor: pointer;
+    transition: all 0.3s ease;
     font-weight: bold;
     margin-left: 10px;
+}
+
+.copy-btn:hover {
+    background: #00cccc;
+    box-shadow: 0 0 10px var(--glow-color);
+}
+
+.copy-btn:disabled {
+    background: var(--gray);
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .progress-bar {
@@ -279,6 +496,7 @@ nav {
     background: var(--primary);
     width: 0%;
     transition: width 0.3s ease;
+    box-shadow: 0 0 10px var(--glow-color);
 }
 
 .profile-image {
@@ -296,29 +514,74 @@ nav {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.3s ease;
     border: 2px solid var(--primary);
 }
 
-.upload-icon-large {
-    font-size: 120px;
-    color: var(--primary);
+.profile-circle:hover {
+    box-shadow: 0 0 30px var(--glow-color);
+    transform: scale(1.05);
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        background-color: rgba(10, 25, 47, 0.95);
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .menu-btn {
+        display: block;
+    }
+
     .hologram-container {
         flex-direction: column;
         text-align: center;
         padding: 20px;
     }
+
+    .upload-container {
+        order: 2;
+    }
+
     .services-grid {
         grid-template-columns: 1fr;
     }
+
+    .upload-container h1 {
+        font-size: 36px;
+    }
+
     .result-item {
         flex-direction: column;
+        align-items: flex-start;
         gap: 10px;
     }
+
+    .result-url {
+        margin: 0;
+        width: 100%;
+    }
+
     .profile-image {
         width: 250px;
         height: 250px;
+    }
+
+    .upload-icon-large {
+        font-size: 80px;
     }
 }
