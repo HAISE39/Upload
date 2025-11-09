@@ -1,6 +1,7 @@
 const { IncomingForm } = require('formidable');
 const fs = require('fs').promises;
 const axios = require('axios');
+const mime = require('mime-types');
 
 // Helper function untuk membuat FormData
 function createFormData() {
@@ -12,12 +13,16 @@ function createFormData() {
 const termaiKey = "AIzaBj7z2z3xBjsk";
 const termaiDomain = 'https://c.termai.cc';
 
+// Simple file type detection tanpa file-type package
+function getFileExtension(filename, buffer) {
+  const ext = filename.split('.').pop();
+  return ext || 'bin';
+}
+
 // Fungsi upload ke Termai
 async function uploadTermai(fileBuffer, filename) {
   try {
-    const fileType = await import('file-type');
-    const { ext } = (await fileType.fileTypeFromBuffer(fileBuffer)) || { ext: filename.split('.').pop() };
-    
+    const ext = getFileExtension(filename, fileBuffer);
     const formData = createFormData();
     formData.append('file', fileBuffer, { filename: `file.${ext}` });
 
@@ -39,7 +44,6 @@ async function uploadTermai(fileBuffer, filename) {
 // Upload ke qu.ax
 async function pomf2(fileBuffer, filename) {
   try {
-    const mime = require('mime-types');
     const contentType = mime.lookup(filename) || "application/octet-stream";
     const form = createFormData();
     form.append("files[]", fileBuffer, {
@@ -51,10 +55,10 @@ async function pomf2(fileBuffer, filename) {
       headers: { ...form.getHeaders() },
     });
     
-    if (!response.data.success || !response.data.files?.length) {
-      throw new Error("Upload ke qu.ax gagal");
+    if (response.data && response.data.success && response.data.files && response.data.files.length > 0) {
+      return response.data.files[0].url;
     }
-    return response.data.files[0].url;
+    throw new Error("Upload ke qu.ax gagal - Response tidak valid");
   } catch (err) {
     console.error("Pomf2 Error:", err.message);
     return null;
@@ -64,9 +68,7 @@ async function pomf2(fileBuffer, filename) {
 // Upload ke catbox.moe
 async function uploadCatbox(buffer, filename) {
   try {
-    const fileType = await import('file-type');
-    const { ext } = (await fileType.fileTypeFromBuffer(buffer)) || { ext: filename.split('.').pop() };
-    
+    const ext = getFileExtension(filename, buffer);
     const form = createFormData();
     form.append("fileToUpload", buffer, "file." + ext);
     form.append("reqtype", "fileupload");
@@ -75,7 +77,10 @@ async function uploadCatbox(buffer, filename) {
       headers: form.getHeaders(),
     });
     
-    return res.data;
+    if (res.data && typeof res.data === 'string' && res.data.startsWith('http')) {
+      return res.data;
+    }
+    throw new Error("Upload ke catbox.moe gagal");
   } catch (err) {
     console.error("Catbox Error:", err.message);
     return null;
@@ -96,7 +101,7 @@ async function uploadYpnk(buffer, filename) {
       timeout: 120000
     });
     
-    if (response.data.success && response.data.files?.[0]) {
+    if (response.data && response.data.success && response.data.files && response.data.files[0]) {
       return `https://cdn.ypnk.biz.id${response.data.files[0].url}`;
     }
     throw new Error("Upload ke cdn.ypnk.biz.id gagal");
@@ -133,7 +138,6 @@ async function uploadTmpFiles(buffer, filename) {
 // Upload ke put.icu
 async function uploadPutIcu(buffer, filename) {
   try {
-    const mime = require('mime-types');
     const contentType = mime.lookup(filename) || "application/octet-stream";
     
     const res = await axios.put(`https://put.icu/upload/`, buffer, {
@@ -204,7 +208,7 @@ module.exports = async (req, res) => {
     const fileBuffer = await fs.readFile(files.file[0].filepath);
     const filename = files.file[0].originalFilename;
 
-    console.log(`Memproses upload file: ${filename} ke ${services.length} layanan`);
+    console.log(`Memproses upload file: ${filename} (${fileBuffer.length} bytes) ke ${services.length} layanan`);
 
     // Mapping service IDs ke fungsi upload
     const uploadFunctions = {
@@ -228,14 +232,18 @@ module.exports = async (req, res) => {
       }
 
       try {
+        console.log(`Uploading to ${serviceId}...`);
         const url = await uploadFunction();
+        console.log(`Result from ${serviceId}:`, url ? 'SUCCESS' : 'FAILED');
+        
         return {
           service: serviceId,
           success: !!url,
           url: url,
-          error: url ? null : 'Upload gagal'
+          error: url ? null : 'Upload gagal - tidak ada URL yang dikembalikan'
         };
       } catch (error) {
+        console.error(`Error uploading to ${serviceId}:`, error.message);
         return {
           service: serviceId,
           success: false,
@@ -247,11 +255,21 @@ module.exports = async (req, res) => {
     const results = await Promise.all(uploadPromises);
 
     // Clean up temporary file
-    await fs.unlink(files.file[0].filepath);
+    try {
+      await fs.unlink(files.file[0].filepath);
+    } catch (cleanupError) {
+      console.error('Cleanup error:', cleanupError.message);
+    }
+
+    // Hitung hasil
+    const successCount = results.filter(r => r.success).length;
+    const failedCount = results.filter(r => !r.success).length;
+
+    console.log(`Upload selesai: ${successCount} sukses, ${failedCount} gagal`);
 
     return res.status(200).json({
       success: true,
-      message: 'Upload selesai',
+      message: `Upload selesai: ${successCount} sukses, ${failedCount} gagal`,
       results: results
     });
 
