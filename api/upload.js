@@ -3,6 +3,9 @@ const fs = require('fs').promises;
 const axios = require('axios');
 const mime = require('mime-types');
 
+// Konfigurasi untuk file besar
+const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+
 // Helper function untuk membuat FormData
 function createFormData() {
   const FormData = require('form-data');
@@ -19,7 +22,7 @@ function getFileExtension(filename, buffer) {
   return ext || 'bin';
 }
 
-// Fungsi upload ke Termai
+// Fungsi upload ke Termai dengan stream
 async function uploadTermai(fileBuffer, filename) {
   try {
     const ext = getFileExtension(filename, fileBuffer);
@@ -28,7 +31,9 @@ async function uploadTermai(fileBuffer, filename) {
 
     const res = await axios.post(`${termaiDomain}/api/upload?key=${termaiKey}`, formData, {
       headers: formData.getHeaders(),
-      timeout: 120000
+      timeout: 300000, // 5 menit timeout
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
 
     if (res.data && res.data.status && res.data.path) {
@@ -41,7 +46,7 @@ async function uploadTermai(fileBuffer, filename) {
   }
 }
 
-// Upload ke qu.ax
+// Upload ke qu.ax dengan optimasi memory
 async function pomf2(fileBuffer, filename) {
   try {
     const contentType = mime.lookup(filename) || "application/octet-stream";
@@ -53,6 +58,9 @@ async function pomf2(fileBuffer, filename) {
     
     const response = await axios.post("https://qu.ax/upload.php", form, {
       headers: { ...form.getHeaders() },
+      timeout: 300000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
     
     if (response.data && response.data.success && response.data.files && response.data.files.length > 0) {
@@ -75,6 +83,9 @@ async function uploadCatbox(buffer, filename) {
     
     const res = await axios.post("https://catbox.moe/user/api.php", form, {
       headers: form.getHeaders(),
+      timeout: 300000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
     
     if (res.data && typeof res.data === 'string' && res.data.startsWith('http')) {
@@ -98,7 +109,9 @@ async function uploadYpnk(buffer, filename) {
         ...form.getHeaders(),
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36'
       },
-      timeout: 120000
+      timeout: 300000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
     
     if (response.data && response.data.success && response.data.files && response.data.files[0]) {
@@ -119,7 +132,9 @@ async function uploadTmpFiles(buffer, filename) {
     
     const res = await axios.post("https://tmpfiles.org/api/v1/upload", form, {
       headers: form.getHeaders(),
-      timeout: 120000
+      timeout: 300000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     });
     
     if (res.data && res.data.data && res.data.data.url) {
@@ -147,7 +162,7 @@ async function uploadPutIcu(buffer, filename) {
       },
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
-      timeout: 120000
+      timeout: 300000
     });
     
     if (res.data && res.data.direct_url) {
@@ -187,12 +202,23 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Parse form data
-    const form = new IncomingForm();
-    
+    // Parse form data dengan konfigurasi untuk file besar
+    const form = new IncomingForm({
+      maxFileSize: MAX_FILE_SIZE,
+      maxFieldsSize: MAX_FILE_SIZE,
+      keepExtensions: true,
+      multiples: false
+    });
+
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
+        if (err) {
+          if (err.code === 1009) {
+            reject(new Error(`File terlalu besar. Maksimal ukuran file adalah 200MB`));
+          } else {
+            reject(err);
+          }
+        }
         resolve({ fields, files });
       });
     });
@@ -204,11 +230,20 @@ module.exports = async (req, res) => {
       });
     }
 
+    // Validasi ukuran file
+    const fileSize = files.file[0].size;
+    if (fileSize > MAX_FILE_SIZE) {
+      return res.status(400).json({
+        success: false,
+        message: `File terlalu besar. Maksimal ukuran file adalah 200MB. File Anda: ${(fileSize / 1024 / 1024).toFixed(2)}MB`
+      });
+    }
+
     const services = JSON.parse(fields.services || '[]');
     const fileBuffer = await fs.readFile(files.file[0].filepath);
     const filename = files.file[0].originalFilename;
 
-    console.log(`Memproses upload file: ${filename} (${fileBuffer.length} bytes) ke ${services.length} layanan`);
+    console.log(`Memproses upload file: ${filename} (${(fileSize / 1024 / 1024).toFixed(2)}MB) ke ${services.length} layanan`);
 
     // Mapping service IDs ke fungsi upload
     const uploadFunctions = {
@@ -220,15 +255,17 @@ module.exports = async (req, res) => {
       'puticu': () => uploadPutIcu(fileBuffer, filename)
     };
 
-    // Eksekusi upload ke semua service yang dipilih
-    const uploadPromises = services.map(async (serviceId) => {
+    // Eksekusi upload ke semua service yang dipilih secara sequential untuk menghindari memory overflow
+    const results = [];
+    for (const serviceId of services) {
       const uploadFunction = uploadFunctions[serviceId];
       if (!uploadFunction) {
-        return {
+        results.push({
           service: serviceId,
           success: false,
           error: 'Service tidak dikenali'
-        };
+        });
+        continue;
       }
 
       try {
@@ -236,23 +273,24 @@ module.exports = async (req, res) => {
         const url = await uploadFunction();
         console.log(`Result from ${serviceId}:`, url ? 'SUCCESS' : 'FAILED');
         
-        return {
+        results.push({
           service: serviceId,
           success: !!url,
           url: url,
           error: url ? null : 'Upload gagal - tidak ada URL yang dikembalikan'
-        };
+        });
+        
+        // Beri jeda antara upload untuk mengurangi beban memory
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error(`Error uploading to ${serviceId}:`, error.message);
-        return {
+        results.push({
           service: serviceId,
           success: false,
           error: error.message
-        };
+        });
       }
-    });
-
-    const results = await Promise.all(uploadPromises);
+    }
 
     // Clean up temporary file
     try {
@@ -278,7 +316,7 @@ module.exports = async (req, res) => {
     
     return res.status(500).json({
       success: false,
-      message: 'Terjadi kesalahan server',
+      message: error.message || 'Terjadi kesalahan server',
       error: error.message
     });
   }
