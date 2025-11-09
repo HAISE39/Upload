@@ -38,19 +38,6 @@ const uploadServices = [
         }
     },
     {
-        id: 'pomf2lain',
-        name: 'Pomf2 Lain.la',
-        description: 'Layanan upload open source yang andal',
-        icon: 'O',
-        details: {
-            'Kecepatan': 'Tinggi',
-            'Kapasitas': 'Tidak Dibatasi',
-            'Masa Aktif': 'Permanen',
-            'Fitur': 'Open Source'
-        },
-        badge: 'Open Source'
-    },
-    {
         id: 'ypnk',
         name: 'YPNK CDN',
         description: 'CDN Indonesia dengan kecepatan lokal',
