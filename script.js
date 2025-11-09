@@ -417,6 +417,10 @@ async function uploadToServer() {
             body: formData
         });
         
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
         
         if (result.success) {
@@ -443,6 +447,8 @@ async function uploadToServer() {
 
 // Update hasil upload di UI
 function updateUploadResults(results) {
+    let successCount = 0;
+    
     results.forEach(result => {
         const { service, success, url, error } = result;
         const statusEl = document.getElementById(`status-${service}`);
@@ -457,6 +463,7 @@ function updateUploadResults(results) {
             statusEl.className = 'result-status status-success';
             urlEl.textContent = url;
             urlEl.title = url;
+            successCount++;
             
             copyBtn.disabled = false;
             copyBtn.addEventListener('click', function() {
@@ -475,4 +482,8 @@ function updateUploadResults(results) {
             copyBtn.style.display = 'none';
         }
     });
+    
+    // Update info
+    const uploadInfo = document.getElementById('uploadInfo');
+    uploadInfo.innerHTML += `<p><strong>Hasil:</strong> ${successCount} sukses, ${results.length - successCount} gagal</p>`;
 }
