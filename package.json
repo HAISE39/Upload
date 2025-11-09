@@ -1,7 +1,7 @@
 {
-  "name": "uploader-website", 
+  "name": "fileupload-pro",
   "version": "1.0.0",
-  "description": "Multi-service file uploader for large files",
+  "description": "Professional large file uploader",
   "scripts": {
     "dev": "vercel dev"
   }
